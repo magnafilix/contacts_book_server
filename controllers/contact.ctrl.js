@@ -1,6 +1,5 @@
 const Contact = require('../models/Contact')
 
-const NotFoundError = require('../error-handlers/notFound.error')
 const ConflictError = require('../error-handlers/conflict.error')
 const BadRequestError = require('../error-handlers/badRequest.error')
 
@@ -45,10 +44,10 @@ module.exports = {
       if (err || !contacts)
         return res
           .status(400)
-          .send(new NotFoundError(err.message || 'No Contacts Found'))
+          .send(new BadRequestError(err.message || 'No Contacts Found'))
 
       res.json({ code: 200, contacts })
-    })
+    }).select('-__v')
   },
   updateContact: async (req, res) => {
     try {
@@ -89,5 +88,18 @@ module.exports = {
     } catch (error) {
       res.status(400).send(new BadRequestError(error.message))
     }
+  },
+  deleteContact: (req, res) => {
+    const { id } = req.params
+
+    return Contact.deleteOne(
+      { _id: id },
+      (err, result) => {
+        if (err || !result) return res
+          .status(409)
+          .send(new ConflictError(err.message || 'Could not delete contact'))
+
+        return res.json({ code: 204, message: 'Deleted' })
+      })
   }
 }

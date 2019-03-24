@@ -25,4 +25,7 @@ module.exports = router => {
   /**
    * DELETE contact
    */
+  router
+    .route('/contact/:id')
+    .delete(contactCtrl.deleteContact)
 }
